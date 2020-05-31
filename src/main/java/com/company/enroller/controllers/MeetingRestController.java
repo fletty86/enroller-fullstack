@@ -26,6 +26,14 @@ public class MeetingRestController {
 
 	@Autowired
 	ParticipantService participantService;
+	
+	@RequestMapping(value = "", method = RequestMethod.GET)//z poprzedniego zadania
+	public ResponseEntity<?> getMeetings() {
+		Collection<Meeting> meetings = meetingService.getAll();
+		return new ResponseEntity<Collection<Meeting>>(meetings, HttpStatus.OK);
+	}
+
+	
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public ResponseEntity<?> findMeetings(@RequestParam(value = "title", defaultValue = "") String title,
