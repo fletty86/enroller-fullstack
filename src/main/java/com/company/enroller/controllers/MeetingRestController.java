@@ -27,13 +27,6 @@ public class MeetingRestController {
 	@Autowired
 	ParticipantService participantService;
 	
-	@RequestMapping(value = "", method = RequestMethod.GET)//z poprzedniego zadania
-	public ResponseEntity<?> getMeetings() {
-		Collection<Meeting> meetings = meetingService.getAll();
-		return new ResponseEntity<Collection<Meeting>>(meetings, HttpStatus.OK);
-	}
-
-	
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public ResponseEntity<?> findMeetings(@RequestParam(value = "title", defaultValue = "") String title,
@@ -67,7 +60,7 @@ public class MeetingRestController {
 	}
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public ResponseEntity<?> addMeeting(@RequestBody Meeting meeting) {
+	public ResponseEntity<?> addNewMeeting(@RequestBody Meeting meeting) {
 		if (meetingService.alreadyExist(meeting)) {
 			return new ResponseEntity<String>("Unable to add. A meeting with title " + meeting.getTitle() + " and date "
 					+ meeting.getDate() + " already exist.", HttpStatus.CONFLICT);
@@ -105,51 +98,6 @@ public class MeetingRestController {
 		meetingService.update(currentMeeting);
 
 		return new ResponseEntity<Collection<Participant>>(currentMeeting.getParticipants(), HttpStatus.OK);
-	}
-	@RequestMapping(value = "", method = RequestMethod.POST) //z poprzedniego zadania
-	public ResponseEntity<?> registerMeeting(@RequestBody Meeting meetingData) {
-	    Meeting meeting = meetingService.findById(meetingData.getId());
-	    if (meeting == null) { 
-	    	meetingService.add(meetingData);
-	    	return new ResponseEntity(HttpStatus.CREATED);
-	    }
-	    else {
-	    	return new ResponseEntity("Unable to create. A meeting with id " + meetingData.getId() + " already exist.", HttpStatus.CONFLICT);
-	    }
-	}
-	@RequestMapping(value = "/{id}/participants", method = RequestMethod.GET)//z poprzedniego zadania
-	public ResponseEntity<?> getMeetingParticipants(@PathVariable("id") long id) {
-		Meeting meeting = meetingService.findById(id);
-	    if (meeting == null) { 
-	    	return new ResponseEntity("Unable to list participants. A meeting with id " + (id) + " doesn't exist.", HttpStatus.CONFLICT);
-	    }
-	    else {
-			Collection<Participant> participants = meeting.getParticipants();
-			return new ResponseEntity<Collection<Participant>>(participants, HttpStatus.OK);
-	    }
-	}
-	@RequestMapping(value = "/{id}/participants", method = RequestMethod.POST)
-	public ResponseEntity<?> addMeetingParticipants(@PathVariable("id") long id, @RequestBody Participant participantData) {
-		Meeting meeting = meetingService.findById(id);
-	    if (meeting == null) { 
-	    	return new ResponseEntity("Unable to add participant. A meeting with id " + (id) + " doesn't exist.", HttpStatus.CONFLICT);
-	    }
-	    else {
-	    	String login = participantData.getLogin();
-	    	System.out.println("login: " + login);
-	    	if (login == null) {
-	    		return new ResponseEntity("Unable to add participant. No login data in the request: " + participantData, HttpStatus.CONFLICT);
-	    	} else {
-			    Participant participant = participantService.findByLogin(login);
-			    if (participant == null) {
-			    	return new ResponseEntity("Unable to add participant. A participant with login " + participantData.getLogin() + " doesn't exist.", HttpStatus.CONFLICT);
-			    }
-			    else {
-					meeting.addParticipant(participant);
-					return new ResponseEntity(HttpStatus.CREATED);
-			    }
-	    	}
-	    }
 	}
 
 	@RequestMapping(value = "{id}/participants/{login}", method = RequestMethod.DELETE)
