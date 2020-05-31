@@ -116,7 +116,18 @@ public class MeetingRestController {
 	    else {
 	    	return new ResponseEntity("Unable to create. A meeting with id " + meetingData.getId() + " already exist.", HttpStatus.CONFLICT);
 	    }
-	} 
+	}
+	@RequestMapping(value = "/{id}/participants", method = RequestMethod.GET)//z poprzedniego zadania
+	public ResponseEntity<?> getMeetingParticipants(@PathVariable("id") long id) {
+		Meeting meeting = meetingService.findById(id);
+	    if (meeting == null) { 
+	    	return new ResponseEntity("Unable to list participants. A meeting with id " + (id) + " doesn't exist.", HttpStatus.CONFLICT);
+	    }
+	    else {
+			Collection<Participant> participants = meeting.getParticipants();
+			return new ResponseEntity<Collection<Participant>>(participants, HttpStatus.OK);
+	    }
+	}
 
 	@RequestMapping(value = "{id}/participants/{login}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> removeParticipant(@PathVariable("id") long id, @PathVariable("login") String login) {
