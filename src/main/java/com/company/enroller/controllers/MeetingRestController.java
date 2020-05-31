@@ -44,4 +44,67 @@ public class MeetingRestController {
 		Collection<Meeting> meetings = meetingService.findMeetings(title, description, foundParticipant, sortMode);
 		return new ResponseEntity<Collection<Meeting>>(meetings, HttpStatus.OK);
 	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	public ResponseEntity<?> getMeeting(@PathVariable("id") long id) {
+		Meeting meeting = meetingService.findById(id);
+		return new ResponseEntity<Meeting>(meeting, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteMeeting(@PathVariable("id") long id) {
+		Meeting meeting = meetingService.findById(id);
+		meetingService.delete(meeting);
+		return new ResponseEntity<Meeting>(meeting, HttpStatus.NO_CONTENT);
+	}
+
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	public ResponseEntity<?> addMeeting(@RequestBody Meeting meeting) {
+		if (meetingService.alreadyExist(meeting)) {
+			return new ResponseEntity<String>("Unable to add. A meeting with title " + meeting.getTitle() + " and date "
+					+ meeting.getDate() + " already exist.", HttpStatus.CONFLICT);
+		}
+		meetingService.add(meeting);
+		return new ResponseEntity<>(meeting, HttpStatus.CREATED);
+	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<?> updateMeeting(@PathVariable("id") long id, @RequestBody Meeting meeting) {
+		Meeting currentMeeting = meetingService.findById(id);
+		meeting.setId(currentMeeting.getId());
+		meetingService.update(meeting);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "{id}/participants", method = RequestMethod.GET)
+	public ResponseEntity<?> getParticipants(@PathVariable("id") long id) {
+		Meeting meeting = meetingService.findById(id);
+		return new ResponseEntity<Collection<Participant>>(meeting.getParticipants(), HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "{id}/participants", method = RequestMethod.POST)
+	public ResponseEntity<?> addParticipant(@PathVariable("id") long id, @RequestBody Map<String, String> json) {
+
+		Meeting currentMeeting = meetingService.findById(id);
+		String login = json.get("login");
+		if (login == null) {
+			return new ResponseEntity<String>("Unable to find participant login in the request body",
+					HttpStatus.BAD_REQUEST);
+		}
+
+		Participant participantToAdd = participantService.findByLogin(login);
+		currentMeeting.addParticipant(participantToAdd);
+		meetingService.update(currentMeeting);
+
+		return new ResponseEntity<Collection<Participant>>(currentMeeting.getParticipants(), HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "{id}/participants/{login}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> removeParticipant(@PathVariable("id") long id, @PathVariable("login") String login) {
+		Meeting meeting = meetingService.findById(id);
+		Participant participant = participantService.findByLogin(login);
+		meeting.removeParticipant(participant);
+		meetingService.update(meeting);
+		return new ResponseEntity<Collection<Participant>>(meeting.getParticipants(), HttpStatus.OK);
+	}
 }
