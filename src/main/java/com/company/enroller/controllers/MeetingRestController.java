@@ -106,6 +106,17 @@ public class MeetingRestController {
 
 		return new ResponseEntity<Collection<Participant>>(currentMeeting.getParticipants(), HttpStatus.OK);
 	}
+	@RequestMapping(value = "", method = RequestMethod.POST) //z poprzedniego zadania
+	public ResponseEntity<?> registerMeeting(@RequestBody Meeting meetingData) {
+	    Meeting meeting = meetingService.findById(meetingData.getId());
+	    if (meeting == null) { 
+	    	meetingService.add(meetingData);
+	    	return new ResponseEntity(HttpStatus.CREATED);
+	    }
+	    else {
+	    	return new ResponseEntity("Unable to create. A meeting with id " + meetingData.getId() + " already exist.", HttpStatus.CONFLICT);
+	    }
+	} 
 
 	@RequestMapping(value = "{id}/participants/{login}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> removeParticipant(@PathVariable("id") long id, @PathVariable("login") String login) {
